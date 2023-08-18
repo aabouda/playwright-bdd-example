@@ -1,49 +1,37 @@
-import { Locator, Page, expect } from '@playwright/test';
-import { Fixture, Given, When, Then } from 'playwright-bdd/decorators';
-import type { test } from './fixtures';
+import { Page, expect } from '@playwright/test';
+import { Given, When, Then, Fixture } from 'playwright-bdd/decorators';
+import { DataTable } from '@cucumber/cucumber';
 
-export
-@Fixture<typeof test>('todoPage')
-class TodoPage {
-  readonly inputBox: Locator;
-  readonly todoItems: Locator;
+export @Fixture('todoPage') class TodoPage {
+  private page: Page;
 
-  constructor(public page: Page) {
-    this.inputBox = this.page.locator('input.new-todo');
-    this.todoItems = this.page.getByTestId('todo-item');
+  constructor(page: Page) {
+    this.page = page;
   }
 
-  @Given('I am on todo page')
-  async open() {
-    await this.page.goto('https://demo.playwright.dev/todomvc/');
+  @Given('I am on the Todo page')
+  async navigateToTodoPage() {
+    await this.page.goto('https://demo.playwright.dev/todomvc/#/');
   }
 
-  @When('I add todo {string}')
-  async addToDo(text: string) {
-    await this.inputBox.fill(text);
-    await this.inputBox.press('Enter');
+  @When('I create a new todo item with text {string}')
+  async createTodoItem(text: string) {
+    await this.page.getByPlaceholder('What needs to be done?').fill(text);
+    await this.page.getByPlaceholder('What needs to be done?').press('Enter');
   }
 
-  @When('I complete todo {string}')
-  async completeTodo(hasText: string) {
-    const checkbox = this.todoItems.filter({ hasText }).getByRole('checkbox');
-    if (!await checkbox.isChecked()) {
-      await checkbox.click();
-    }
+  @When('I complete the todo item with text {string}')
+  async completeTodoItem(text: string) {
+    await this.page.getByTestId('todo-item').filter({ hasText: text }).getByLabel('Toggle Todo').check();
   }
 
-  @When(/I filter todos as "(All|Completed)"/)
-  async filterTodos(name: 'All' | 'Completed') {
-    await this.page.getByRole('link', { name }).click();
+  @When('I filter to see only completed items')
+  async filterCompletedItems() {
+    await this.page.getByRole('link', { name: 'Completed' }).click();
   }
 
-  @Then('visible todos count is {int}')
-  async checkVisibleTodosCount(count: number) {
-    await expect(this.todoItems).toHaveCount(count);
-  }
-
-  @Then('page screenshot matches previous one')
-  async matchScreenshot() {
-    await expect(this.page).toHaveScreenshot();
+  @Then('I should see the following todo items:')
+  async verifyTodoItemsVisible(itemList: DataTable) {
+    await expect(this.page.getByTestId('todo-title')).toHaveText(itemList.raw().flat());
   }
 }

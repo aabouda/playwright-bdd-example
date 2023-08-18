@@ -9,7 +9,7 @@
     "watch:pw": "playwright test --ui",
     "watch": "run-p watch:*",
     "report": "npx playwright show-report",
-    "steps": "npx bddgen export"
+    "export": "npx bddgen export"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

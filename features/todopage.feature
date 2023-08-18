@@ -1,21 +1,33 @@
-@todo
-Feature: Todo Page
+Feature: Todo List Management
 
-    Background:
-      Given I am on todo page
+  Background:
+    Given I am on the Todo page
 
-    Scenario: Empty list
-      Then visible todos count is 0
-      And page screenshot matches previous one
+  Scenario: Create a new todo item
+    When I create a new todo item with text "Buy groceries"
+    Then I should see the following todo items:
+      | Buy groceries   |
 
-    Scenario: Add todos
-      When I add todo "foo"
-      And I add todo "bar"
-      Then visible todos count is 2
+  Scenario: Complete a todo item
+    When I create a new todo item with text "Read a book"
+    And I complete the todo item with text "Read a book"
+    Then I should see the following todo items:
+      | Read a book   |
 
-    Scenario: Complete todos
-      When I add todo "foo"
-      And I add todo "bar"
-      And I complete todo "bar"
-      And I filter todos as "Completed"
-      Then visible todos count is 1
+  Scenario: Filter completed items
+    When I create a new todo item with text "Walk the dog"
+    And I create a new todo item with text "Water the plants"
+    And I complete the todo item with text "Walk the dog"
+    And I filter to see only completed items
+    Then I should see the following todo items:
+      | Walk the dog   |
+
+  Scenario: Filter completed items with multiple completed items
+    When I create a new todo item with text "Go for a run"
+    And I create a new todo item with text "Write code"
+    And I complete the todo item with text "Go for a run"
+    And I complete the todo item with text "Write code"
+    And I filter to see only completed items
+    Then I should see the following todo items:
+      | Go for a run   |
+      | Write code     |
